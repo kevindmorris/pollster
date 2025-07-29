@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:17
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: spring-boot-api
+    container_name: api
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    restart: always
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    image: react-ui
+    container_name: ui
+    ports:
+      - 3000:80
+    restart: always
+    depends_on:
+      - api
+
+volumes:
+  db_data:
